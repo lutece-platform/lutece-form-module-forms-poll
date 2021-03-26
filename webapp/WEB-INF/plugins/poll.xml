@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<plug-in>
+    <name>poll</name>
+    <class>fr.paris.lutece.portal.service.plugin.PluginDefaultImplementation</class>
+    <version>1.0.0-SNAPSHOT</version>
+    <documentation></documentation>
+    <installation></installation>
+    <changes></changes>
+    <user-guide></user-guide>
+    <description>poll.plugin.description</description>
+    <provider>poll.plugin.provider</provider>
+    <provider-url>http://lutece.paris.fr</provider-url>
+    <icon-url>images/admin/skin/feature_default_icon.png</icon-url>
+    <copyright>Mairie de paris</copyright>
+    <db-pool-required>1</db-pool-required>
+    
+    <core-version-dependency>
+        <min-core-version>4.1.0</min-core-version>
+        <max-core-version/>
+    </core-version-dependency>
+
+    <!-- Admin features parameters -->
+    <admin-features>
+        <admin-feature>
+            <feature-id>POLL_MANAGEMENT</feature-id>
+            <feature-title>poll.adminFeature.Manage.name</feature-title>
+            <feature-description>poll.adminFeature.Manage.description</feature-description>
+            <feature-level>1</feature-level>
+            <feature-url>jsp/admin/plugins/poll/ManagePollForms.jsp</feature-url>
+            <feature-icon-url></feature-icon-url>
+        </admin-feature>
+    </admin-features>
+
+    <!-- XPages parameters -->
+    <applications>
+        <application>
+            <application-id>pollform</application-id>
+            <application-class>fr.paris.lutece.plugins.poll.web.PollFormApp</application-class>
+        </application>
+    </applications>
+
+    <!-- Portlet parameters -->
+    <portlets>
+    </portlets>
+</plug-in>

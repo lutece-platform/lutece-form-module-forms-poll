@@ -1,0 +1,10 @@
+<#macro tabs2 tab >
+<@tabs>
+	<@tabList>
+			<li <#if tab="pollform">class="active"</#if>>
+				<@aButton href="jsp/admin/plugins/poll/ManagePollForms.jsp">#i18n{poll.manage_pollforms.pageTitle}</@aButton>
+			</li>
+	</@tabList>
+</@tabs>
+
+</#macro>

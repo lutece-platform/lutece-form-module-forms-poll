@@ -1,0 +1,85 @@
+<@box>
+	<@boxHeader title='#i18n{poll.modify_pollform.title}' />
+	<@boxBody>
+		<@tform class="form-horizontal" method="post" name="modify_pollform"
+			action="jsp/admin/plugins/poll/ManagePollForms.jsp">
+			<@messages errors=errors />
+			<input type="hidden" id="id" name="id" value="${pollform.id}" />
+			<input type="hidden" value="${token}" name="token" />
+			<@formGroup labelFor='title' labelKey='#i18n{poll.modify_pollform.labelTitle}' mandatory=true>
+				<@input type='text' id="title" name='title' value='${pollform.title!\' \'}' />
+			</@formGroup>
+			<@input type='hidden' id='id_form' name='id_form' value='${pollform.idForm!\' \'}' tabIndex='0' />
+			<@formGroup labelFor='is_visible' labelKey='#i18n{poll.modify_pollform.labelIsVisible}'>
+				<@checkBox id="is_visible" name="is_visible" value="1" checked=pollform.isVisible!'false'
+					tabIndex='1' />
+			</@formGroup>
+			<#list form_step_question_list as step, questionList>
+				<@formGroup labelKey='${step.title}'>
+					<#list questionList as question>
+						<#assign checkedValue=getCheckedValue( question.id ) />
+						<#assign typeValue=getType( question.id ) />
+						<@inputGroup>
+							<@inputGroupItem type='btn'>
+								<@btnGroupRadioCheckbox type='checkbox' color='default' name='${question.id}'
+									id='${question.id}' value='${question.id}' labelParams='' labelFor='${question.id}'
+									labelKey=' ${question.title}' checked=checkedValue />
+							</@inputGroupItem>
+							<#assign pollFormQuestionId=getPollFormQuestionId( question.id ) />
+							<#if pollFormQuestionId !=0>
+								<@aButton
+									href='jsp/admin/plugins/poll/ManagePollForms.jsp?view=modifyPollFormQuestion&id_question=${pollFormQuestionId}'
+									size='' color='default' style=''>
+									<@icon style='cog' />
+								</@aButton>
+							</#if>
+						</@inputGroup>
+					</#list>
+				</@formGroup>
+			</#list>
+			<@formGroup labelFor='btn_is_visible' labelKey='#i18n{poll.modify_pollform.labelBtnIsVisible}'>
+				<@checkBox id="btn_is_visible" name="btn_is_visible" value="1" checked=pollform.btnIsVisible!'false'
+					tabIndex='1' />
+			</@formGroup>
+			<@formGroup labelFor='title' labelKey='#i18n{poll.modify_pollform.labelBtnTitle}'>
+				<@input type='text' id="btn_title" name='btn_title' value='${pollform.btnTitle!\' \'}' />
+			</@formGroup>
+			<@formGroup labelFor='btn_URL' labelKey='#i18n{poll.modify_pollform.labelBtnURL}'>
+				<@input type='text' id="btn_URL" name='btn_URL' value='${pollform.btnURL!\' \'}' />
+			</@formGroup>
+			<@actionButtons button1Name="action_modifyPollForm" button2Name="view_managePollForm" />
+		</@tform>
+	</@boxBody>
+</@box>
+<#function getCheckedValue questionId>
+	<#if poll_form_question_list?has_content>
+		<#list poll_form_question_list as optionalQuestion>
+			<#if optionalQuestion.idQuestion=questionId>
+				<#if optionalQuestion.isChecked>
+					<#return true>
+				</#if>
+			</#if>
+		</#list>
+	</#if>
+	<#return false>
+</#function>
+<#function getType questionId>
+	<#if poll_form_question_list?has_content>
+		<#list poll_form_question_list as optionalQuestion>
+			<#if optionalQuestion.idQuestion=questionId>
+				<#return "pie">
+			</#if>
+		</#list>
+	</#if>
+	<#return false>
+</#function>
+<#function getPollFormQuestionId questionId>
+	<#if poll_form_question_list?has_content>
+		<#list poll_form_question_list as optionalQuestion>
+			<#if optionalQuestion.idQuestion=questionId>
+				<#return optionalQuestion.id>
+			</#if>
+		</#list>
+	</#if>
+	<#return 0>
+</#function>

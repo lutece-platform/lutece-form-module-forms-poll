@@ -1,0 +1,35 @@
+<@box>
+	<@boxHeader title='#i18n{poll.create_pollform.title}' />
+	<@boxBody>
+		<@tform name='create_pollform' action='jsp/admin/plugins/poll/ManagePollForms.jsp'>
+			<@messages errors=errors />
+			<input type="hidden" id="id" name="id" />
+			<input type="hidden" value="${token}" name="token" />
+			<@formGroup labelFor='title' labelKey='#i18n{poll.modify_pollform.labelTitle}' mandatory=true>
+				<@input type='text' id="title" name='title' value='' />
+			</@formGroup>
+			<@formGroup labelFor='id_form' labelKey='#i18n{poll.modify_pollform.labelIdForm}' mandatory=true>
+				<select id='id_form' name='id_form' class="form-control">
+					<#list form_list as form>
+						<option value="${form.id}">${form.title}</option>
+					</#list>
+				</select>
+			</@formGroup>
+			<@formGroup labelFor='is_visible' labelKey='#i18n{poll.modify_pollform.labelIsVisible}'>
+				<@checkBox id="is_visible" name="is_visible" value="1" checked=pollform.isVisible!'false'
+					tabIndex='1' />
+			</@formGroup>
+			<@formGroup labelFor='btn_is_visible' labelKey='#i18n{poll.modify_pollform.labelBtnIsVisible}'>
+				<@checkBox id="btn_is_visible" name="btn_is_visible" value="1" checked=pollform.isVisible!'false'
+					tabIndex='1' />
+			</@formGroup>
+			<@formGroup labelFor='btn_title' labelKey='#i18n{poll.modify_pollform.labelBtnTitle}'>
+				<@input type='text' id="btn_title" name='btn_title' value='' />
+			</@formGroup>
+			<@formGroup labelFor='btn_URL' labelKey='#i18n{poll.modify_pollform.labelBtnURL}'>
+				<@input type='text' id="btn_URL" name='btn_URL' value='' />
+			</@formGroup>
+			<@actionButtons button1Name="action_createPollForm" button2Name="view_managePollForm" />
+		</@tform>
+	</@boxBody>
+</@box>

@@ -1,0 +1,221 @@
+
+
+
+<#if poll_form.isVisible >
+<div class="jumbotron">
+  <h2 class="">${poll_form.title}</h2>
+
+  <#if poll_form.btnURL?has_content && poll_form.btnTitle?has_content >
+  <@aButton href='${poll_form.btnURL!""}' title='${poll_form.btnTitle!""}' buttonIcon='eye' />
+  </#if>
+      </div>
+<@row>
+  <#list poll_visualization_list as pollVisuzalisation, pollDataList>
+      <@columns md=6>
+          <div class="panel panel-default mb-4">
+              <div class="panel-body mb-2">
+                  <div id="${pollVisuzalisation.id}-chart" style="height:400px;width:100%"></div>
+              </div>
+          </div>
+      </@columns>
+  </#list>
+</@row>
+
+<script src="js/plugins/poll/echarts.min.js" ></script>
+
+<script>
+
+    // variables
+    let colors;
+    let option;
+    let sum;
+
+    // pick a color from $colors
+    function popRandomColor() {
+        var rand = Math.random();
+        var color = colors[Math.floor(rand * colors.length)];
+        colors.splice(Math.floor(rand * colors.length), 1);
+        return color;
+    }
+
+    // get sum from json
+    function getSum( data ) {
+      let sum = 0
+      for (const [key, value] of Object.entries(data)) {
+        sum += value;
+        }
+      return sum;
+      }
+
+  // generate chart for each poll visualization
+<#list poll_visualization_list as pollVisuzalisation, pollDataList> 
+    colors = ["#ffbe0b","#fb5607","#ff006e","#8338ec","#3a86ff"];
+    var chartDom = document.getElementById('${pollVisuzalisation.id}-chart');
+    var myChart = echarts.init(chartDom);
+    builderJson = {
+        "charts": {
+            <#list pollDataList as data >
+        "${data.labelName}": ${data.size}, 
+        </#list>
+        }
+    };
+    var allValueSum = getSum(builderJson.charts)
+    option = {
+        tooltip: {},
+        legend: {
+              show: true,
+              orient: 'horizontal',
+              y: 'bottom'
+          },
+          toolbox: {
+              show: ${pollVisuzalisation.isToolBox?string('true','false')},
+              feature: {
+                  mark: {
+                      show: true
+                  },
+                  dataView: {
+                      show: true,
+                      readOnly: false
+                  },
+                  restore: {
+                      show: true
+                  },
+                  saveAsImage: {
+                      show: true
+                  }
+              }
+          },
+        title: [{
+            text: '${pollVisuzalisation.title}',
+            subtext: "* Total : " + allValueSum + ' reponses',
+                left: 'center',
+              top: 40,
+              textStyle: {
+                  width: 350,
+                  color: '#000',
+                  fontSize: 14,
+                  overflow: 'break',
+                  lineOverflow: 'truncate'
+              }
+        }],
+        <#if pollVisuzalisation.type = "bar" >    
+        grid: [{
+        top: 110,
+        width: '70%',
+        left: "center",
+        containLabel: true
+    }],
+        xAxis: [{
+            type: 'value',
+            max: allValueSum,
+            splitLine: {
+                show: true
+            }
+        },{
+        type: 'value',
+        max: allValueSum,
+        splitLine: {
+            show: false
+        }
+    }],
+        yAxis: [{
+            type: 'category',
+            data: Object.keys(builderJson.charts),
+            axisLabel: {
+                interval: 0,
+                rotate: 30
+            },
+            splitLine: {
+                show: false
+            }
+        },{
+        type: 'category',
+        data: Object.keys(builderJson.charts),
+        axisLabel: {
+            interval: 0,
+            rotate: 30
+        },
+        splitLine: {
+            show: false
+        }
+    }],
+    </#if>
+        series: [
+        <#if pollVisuzalisation.type = "bar" >    
+        {
+            type: 'bar',
+            stack: 'chart',
+            z: 3,
+            label: {
+                position: 'right',
+                show: true
+            },
+           itemStyle: {
+              color: "" + popRandomColor() +""
+          },
+            data: Object.keys(builderJson.charts).map(function (key) {
+                return builderJson.charts[key];
+            })
+        }, {
+            type: 'bar',
+            stack: 'chart',
+            silent: true,
+            itemStyle: {
+                color: '#eee'
+            },
+            data: Object.keys(builderJson.charts).map(function (key) {
+                return allValueSum - builderJson.charts[key];
+            })
+        }
+        </#if>
+        <#if pollVisuzalisation.type = "pie" >    
+        {
+              top: 30,
+              type: 'pie',
+              radius: '55%',
+              center: ['50%', '50%'],
+              label: {
+            show: true,
+            textBorderWidth: 2,
+            position: 'outside',
+            formatter: '{b} : {c}'
+        },
+              data: Object.keys(builderJson.charts).map(function (key) {
+                return {
+                    name: key.replace('.js', ''),
+                    value: builderJson.charts[key],
+                    itemStyle: {
+              color: popRandomColor()
+          }
+                };
+            }),
+              roseType: 'radius',
+              emphasis: {
+                  itemStyle: {
+                      shadowBlur: 20,
+                      shadowOffsetX: 0,
+                      shadowColor: 'rgba(0, 0, 0, 0.5)'
+                  }
+              },
+              itemStyle: {
+                  shadowBlur: 0,
+                  shadowColor: 'rgba(0, 0, 0, 0.5)'
+        },
+        stack: 'chart',
+              animationType: 'scale',
+              animationEasing: 'elasticOut',
+              animationDelay: function(idx) {
+                  return Math.random() * 200;
+              }
+          }
+       </#if>
+    ]
+    };
+        option && myChart.setOption(option);
+    </#list>
+</script>
+<#else>
+<div class="jumbotron">
+  <h2 class="">#i18n{info.poll.unavailable} </h2>
+</div>
+</#if>

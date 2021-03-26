@@ -1,0 +1,44 @@
+<@box>
+	<@boxHeader title='#i18n{poll.manage_pollform.title}' boxTools=true>
+		<@tform class='form-inline pull-right' name='manage_pollform' action='jsp/admin/plugins/poll/ManagePollForms.jsp'>
+			<@button type='submit' name='view_createPollForm' buttonIcon='plus' title='#i18n{poll.manage_pollforms.buttonAdd}' />
+		</@tform>
+	</@boxHeader>
+	<@boxBody>    
+    <@messages infos=infos />
+    <@paginationAdmin paginator=paginator combo=1 />
+    <div class="clearfix"></div>
+    <@table>
+        <tr>
+            <input type="hidden" id="id" name="id"/>
+            <th>Titre</th>
+            <th>#i18n{poll.manage_pollforms.columnIsVisible} Front-End</th>
+            <th>#i18n{portal.util.labelActions}</th>
+        </tr>
+        <@tableHeadBodySeparator />
+        <#list pollform_list as pollform >
+        <tr>
+            <input type="hidden" id="id" name="id"/>
+            <td>
+				${pollform.title}
+			</td>
+            <td>
+                <#if pollform.isVisible = true>
+                #i18n{poll.manage_pollforms.yes}              <#else>
+                #i18n{poll.manage_pollforms.no}          </#if>
+			</td>
+        	<td>
+				<@aButton href='jsp/admin/plugins/poll/ManagePollForms.jsp?view=modifyPollForm&id=${pollform.id}' title='#i18n{portal.util.labelModify}' hideTitle=['all'] buttonIcon='pencil' />
+                <@aButton href='jsp/admin/plugins/poll/ManagePollForms.jsp?view=viewCharts&id_poll=${pollform.id}' title='#i18n{portal.util.labelModify}' hideTitle=['all'] buttonIcon='eye' />
+				<@aButton href='jsp/admin/plugins/poll/ManagePollForms.jsp?action=confirmRemovePollForm&id=${pollform.id}' title='#i18n{portal.util.labelDelete}' buttonIcon='trash' hideTitle=['all'] color='danger'  />
+                <@aButton href='jsp/site/Portal.jsp?page=pollform&id_poll=${pollform.id}' hideTitle=['all'] params='target="_blank"' buttonIcon='external-link' color='success' />
+
+	        </td>
+        </tr>
+        </#list>
+    </@table>
+
+    <@paginationAdmin paginator=paginator />
+
+  </@boxBody>
+</@box>
