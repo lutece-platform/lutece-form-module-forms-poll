@@ -35,30 +35,13 @@ package fr.paris.lutece.plugins.poll.web;
 
 import fr.paris.lutece.portal.web.xpages.XPage;
 import fr.paris.lutece.portal.util.mvc.xpage.MVCApplication;
-import fr.paris.lutece.plugins.forms.business.FormHome;
-import fr.paris.lutece.plugins.forms.business.FormQuestionResponse;
-import fr.paris.lutece.plugins.forms.business.FormQuestionResponseHome;
-import fr.paris.lutece.plugins.forms.business.FormResponse;
-import fr.paris.lutece.plugins.forms.business.FormResponseHome;
-import fr.paris.lutece.plugins.forms.business.Question;
-import fr.paris.lutece.plugins.forms.business.QuestionHome;
-import fr.paris.lutece.plugins.forms.service.FormService;
-import fr.paris.lutece.plugins.genericattributes.business.Response;
-import fr.paris.lutece.plugins.poll.business.PollData;
 import fr.paris.lutece.plugins.poll.business.PollForm;
 import fr.paris.lutece.plugins.poll.business.PollFormHome;
-import fr.paris.lutece.plugins.poll.business.PollFormQuestion;
-import fr.paris.lutece.plugins.poll.business.PollFormQuestionHome;
-import fr.paris.lutece.plugins.poll.business.PollVisualization;
+import fr.paris.lutece.plugins.poll.service.PollFormService;
 import fr.paris.lutece.portal.util.mvc.commons.annotations.View;
 import fr.paris.lutece.portal.util.mvc.xpage.annotations.Controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -87,62 +70,12 @@ public class PollFormApp extends MVCApplication
     public XPage viewHome( HttpServletRequest request )
     {
         Map<String, Object> model = getModel( );
-        Map<PollVisualization, List<PollData>> pollVisualizationWithDataList = new HashMap<>( );
 
         String strIdPoll = request.getParameter( PARAMETER_ID_POLL );
-        if ( strIdPoll != null )
-        {
-            PollForm pollForm = PollFormHome.findByPrimaryKey( Integer.valueOf( strIdPoll ) );
-            if ( pollForm.getIsVisible( ) )
-            {
-                List<PollFormQuestion> pollFormQuestionList = PollFormQuestionHome.getPollFormQuestionListByFormId( pollForm.getId( ), pollForm.getIdForm( ) );
-                for ( PollFormQuestion pollFormQuestion : pollFormQuestionList )
-                {
-                    if ( pollFormQuestion.getIsChecked( ) )
-                    {
-                        Question question = QuestionHome.findByPrimaryKey( pollFormQuestion.getIdQuestion( ) );
-                        PollVisualization pollVisualization = new PollVisualization( );
-                        pollVisualization.setId( question.getId( ) );
-                        pollVisualization.setTitle( question.getTitle( ) );
-                        pollVisualization.setType( pollFormQuestion.getType( ) );
-                        pollVisualization.setIsToolBox( pollFormQuestion.getIsToolbox( ) );
-                        List<FormResponse> listFormResponses = FormResponseHome.selectAllFormResponsesUncompleteByIdForm( pollForm.getIdForm( ) );
-                        List<String> responses = new ArrayList<String>( );
-                        for ( FormResponse formResponse : listFormResponses )
-                        {
-                            if ( !formResponse.isFromSave( ) )
-                            {
-                                List<FormQuestionResponse> formQuestionResponseList = FormQuestionResponseHome
-                                        .findFormQuestionResponseByResponseQuestion( formResponse.getId( ), pollFormQuestion.getIdQuestion( ) );
-                                for ( FormQuestionResponse formQuestionResponse : formQuestionResponseList )
-                                {
-                                    List<Response> responseList = formQuestionResponse.getEntryResponse( );
-                                    for ( Response response : responseList )
-                                    {
-                                        if ( response.getField( ) != null )
-                                        {
-                                            responses.add( response.getResponseValue( ) );
-                                        }
-                                    }
-                                }
-                            }
-                        }
+        PollForm pollForm = PollFormHome.findByPrimaryKey( Integer.valueOf( strIdPoll ) );
+        model.put( "poll_form", pollForm );
+        model.put( "poll_visualization_list", PollFormService.getPollVisualizationList( Integer.valueOf( strIdPoll ) ) );
 
-                        Map<String, Long> counted = responses.stream( ).collect( Collectors.groupingBy( Function.identity( ), Collectors.counting( ) ) );
-                        List<PollData> listPollData = new ArrayList<>( );
-
-                        counted.forEach( ( labelName, size ) -> {
-                            listPollData.add( new PollData( labelName, (int) (long) size ) );
-                        } );
-
-                        pollVisualizationWithDataList.put( pollVisualization, listPollData );
-                    }
-
-                }
-            }
-            model.put( "poll_form", pollForm );
-        }
-        model.put( "poll_visualization_list", pollVisualizationWithDataList );
         return getXPage( TEMPLATE_XPAGE, getLocale( request ), model );
     }
 
