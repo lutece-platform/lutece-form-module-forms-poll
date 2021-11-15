@@ -13,7 +13,7 @@
     <artifactId>module-forms-poll</artifactId>
     <packaging>lutece-plugin</packaging>
     
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3</version>
     <name>Lutece poll plugin</name>
 
     <repositories>
@@ -61,6 +61,6 @@
         <connection>scm:git:https://github.com/lutece-platform/lutece-form-module-forms-poll.git</connection>
         <developerConnection>scm:git:https://github.com/lutece-platform/lutece-form-module-forms-poll.git</developerConnection>
         <url>https://github.com/lutece-platform/lutece-form-module-forms-poll.git</url>
-        <tag>HEAD</tag>
+        <tag>module-forms-poll-1.0.3</tag>
     </scm>
 </project>
