@@ -1,9 +1,9 @@
-<jsp:useBean id="managePollForm" scope="session" class="fr.paris.lutece.plugins.poll.web.PollFormJspBean" />
-<% String strContent = managePollForm.processController ( request , response ); %>
-
 <%@ page errorPage="../../ErrorPage.jsp" %>
+
+${ pageContext.setAttribute( 'strContent', pollFormJspBean.processController( pageContext.request , pageContext.response ) ) }
+
 <jsp:include page="../../AdminHeader.jsp" />
 
-<%= strContent %>
+${ pageContext.getAttribute( 'strContent' ) }
 
 <%@ include file="../../AdminFooter.jsp" %>

@@ -79,6 +79,13 @@ public class PollFormService
 
             Question question = listQuestions.stream( ).filter( x -> x.getId( ) == pollFormQuestion.getIdQuestion( ) ).findFirst( ).orElse( null );
 
+            if ( question == null )
+            {
+                // The forms question was deleted after the poll mapping was created: skip the dangling mapping
+                // instead of failing the whole visualization.
+                continue;
+            }
+
             PollVisualization pollVisualization = new PollVisualization( );
             pollVisualization.setId( question.getId( ) );
             pollVisualization.setTitle( question.getTitle( ) );

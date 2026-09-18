@@ -36,19 +36,23 @@ package fr.paris.lutece.plugins.poll.web;
 
 import fr.paris.lutece.portal.service.message.AdminMessage;
 import fr.paris.lutece.portal.service.message.AdminMessageService;
-import fr.paris.lutece.portal.service.security.SecurityTokenService;
-import fr.paris.lutece.portal.service.admin.AccessDeniedException;
+import fr.paris.lutece.portal.util.mvc.admin.MVCAdminJspBean;
 import fr.paris.lutece.portal.util.mvc.admin.annotations.Controller;
 import fr.paris.lutece.portal.util.mvc.commons.annotations.Action;
 import fr.paris.lutece.portal.util.mvc.commons.annotations.View;
+import fr.paris.lutece.portal.web.cdi.mvc.Models;
+import fr.paris.lutece.portal.web.util.IPager;
+import fr.paris.lutece.portal.web.util.Pager;
 import fr.paris.lutece.util.url.UrlItem;
 
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 
 import fr.paris.lutece.plugins.forms.business.Form;
 import fr.paris.lutece.plugins.forms.business.FormHome;
@@ -67,13 +71,17 @@ import fr.paris.lutece.plugins.poll.service.PollFormService;
 /**
  * This class provides the user interface to manage PollForm features ( manage, create, modify, remove )
  */
-@Controller( controllerJsp = "ManagePollForms.jsp", controllerPath = "jsp/admin/plugins/poll/", right = "POLL_MANAGEMENT" )
-public class PollFormJspBean extends AbstractManageJspBean
+@SessionScoped
+@Named
+@Controller( controllerJsp = "ManagePollForms.jsp", controllerPath = "jsp/admin/plugins/poll/", right = "POLL_MANAGEMENT", securityTokenEnabled = true )
+public class PollFormJspBean extends MVCAdminJspBean
 {
     /**
      *
      */
     private static final long serialVersionUID = -1272407869100208041L;
+    // Rights
+    public static final String RIGHT_MANAGE = "POLL_MANAGEMENT";
     // Templates
     private static final String TEMPLATE_MANAGE_POLLFORMS = "/admin/plugins/poll/manage_pollforms.html";
     private static final String TEMPLATE_CREATE_POLLFORM = "/admin/plugins/poll/create_pollform.html";
@@ -103,8 +111,6 @@ public class PollFormJspBean extends AbstractManageJspBean
     private static final String MARK_POLL_FORM_QUESTION_LIST = "poll_form_question_list";
     private static final String MARK_QUESTION = "question";
 
-    private static final String JSP_MANAGE_POLLFORMS = "jsp/admin/plugins/poll/ManagePollForms.jsp";
-
     // Properties
     private static final String MESSAGE_CONFIRM_REMOVE_POLLFORM = "poll.message.confirmRemovePollForm";
 
@@ -124,7 +130,7 @@ public class PollFormJspBean extends AbstractManageJspBean
     private static final String ACTION_MODIFY_POLLFORM = "modifyPollForm";
     private static final String ACTION_MODIFY_POLLFORM_QUESTION = "modifyPollFormQuestion";
     private static final String ACTION_REMOVE_POLLFORM = "removePollForm";
-    private static final String ACTION_CONFIRM_REMOVE_POLLFORM = "confirmRemovePollForm";
+    private static final String VIEW_CONFIRM_REMOVE_POLLFORM = "confirmRemovePollForm";
 
     // Infos
     private static final String INFO_POLLFORM_CREATED = "poll.info.pollform.created";
@@ -136,6 +142,10 @@ public class PollFormJspBean extends AbstractManageJspBean
     // Session variable to store working values
     private PollForm _pollform;
 
+    @Inject
+    @Pager( listBookmark = MARK_POLLFORM_LIST, defaultItemsPerPage = "poll.listItems.itemsPerPage", baseUrl = "jsp/admin/plugins/poll/ManagePollForms.jsp" )
+    private IPager<PollForm, Void> _pager;
+
     /**
      * Build the Manage View
      * 
@@ -144,12 +154,12 @@ public class PollFormJspBean extends AbstractManageJspBean
      * @return The page
      */
     @View( value = VIEW_MANAGE_POLLFORMS, defaultView = true )
-    public String getManagePollForms( HttpServletRequest request )
+    public String getManagePollForms( HttpServletRequest request, Models model )
     {
         _pollform = null;
         List<PollForm> listPollForms = PollFormHome.getPollFormsList( );
-        Map<String, Object> model = getPaginatedListModel( request, MARK_POLLFORM_LIST, listPollForms, JSP_MANAGE_POLLFORMS );
-        return getPage( PROPERTY_PAGE_TITLE_MANAGE_POLLFORMS, TEMPLATE_MANAGE_POLLFORMS, model );
+        _pager.withListItem( listPollForms ).populateModels( request, model, getLocale( ) );
+        return getPage( PROPERTY_PAGE_TITLE_MANAGE_POLLFORMS, TEMPLATE_MANAGE_POLLFORMS );
     }
 
     /**
@@ -160,17 +170,15 @@ public class PollFormJspBean extends AbstractManageJspBean
      * @return the html code of the pollform form
      */
     @View( VIEW_CREATE_POLLFORM )
-    public String getCreatePollForm( HttpServletRequest request )
+    public String getCreatePollForm( HttpServletRequest request, Models model )
     {
         _pollform = ( _pollform != null ) ? _pollform : new PollForm( );
 
-        Map<String, Object> model = getModel( );
         List<Form> listForms = FormHome.getFormList( );
         model.put( MARK_FORM_LIST, listForms );
         model.put( MARK_POLLFORM, _pollform );
-        model.put( SecurityTokenService.MARK_TOKEN, SecurityTokenService.getInstance( ).getToken( request, ACTION_CREATE_POLLFORM ) );
 
-        return getPage( PROPERTY_PAGE_TITLE_CREATE_POLLFORM, TEMPLATE_CREATE_POLLFORM, model );
+        return getPage( PROPERTY_PAGE_TITLE_CREATE_POLLFORM, TEMPLATE_CREATE_POLLFORM );
     }
 
     /**
@@ -179,17 +187,11 @@ public class PollFormJspBean extends AbstractManageJspBean
      * @param request
      *            The Http Request
      * @return The Jsp URL of the process result
-     * @throws AccessDeniedException
      */
     @Action( ACTION_CREATE_POLLFORM )
-    public String doCreatePollForm( HttpServletRequest request ) throws AccessDeniedException
+    public String doCreatePollForm( HttpServletRequest request )
     {
         populate( _pollform, request, getLocale( ) );
-
-        if ( !SecurityTokenService.getInstance( ).validate( request, ACTION_CREATE_POLLFORM ) )
-        {
-            throw new AccessDeniedException( "Invalid security token" );
-        }
 
         // Check constraints
         if ( !validateBean( _pollform, VALIDATION_ATTRIBUTES_PREFIX ) )
@@ -223,7 +225,7 @@ public class PollFormJspBean extends AbstractManageJspBean
      *            The Http request
      * @return the html code to confirm
      */
-    @Action( ACTION_CONFIRM_REMOVE_POLLFORM )
+    @View( value = VIEW_CONFIRM_REMOVE_POLLFORM, securityTokenAction = ACTION_REMOVE_POLLFORM )
     public String getConfirmRemovePollForm( HttpServletRequest request )
     {
         int nId = Integer.parseInt( request.getParameter( PARAMETER_ID_POLLFORM ) );
@@ -260,13 +262,18 @@ public class PollFormJspBean extends AbstractManageJspBean
      * @return The HTML form to update info
      */
     @View( VIEW_MODIFY_POLLFORM )
-    public String getModifyPollForm( HttpServletRequest request )
+    public String getModifyPollForm( HttpServletRequest request, Models model )
     {
         int nId = Integer.parseInt( request.getParameter( PARAMETER_ID_POLLFORM ) );
 
         if ( _pollform == null || ( _pollform.getId( ) != nId ) )
         {
             _pollform = PollFormHome.findByPrimaryKey( nId );
+        }
+
+        if ( _pollform == null )
+        {
+            return redirectView( request, VIEW_MANAGE_POLLFORMS );
         }
 
         int nIdFrom = _pollform.getIdForm( );
@@ -287,14 +294,12 @@ public class PollFormJspBean extends AbstractManageJspBean
             stepWithQuestionList.put( step, stepQuestionList );
         }
 
-        Map<String, Object> model = getModel( );
         model.put( MARK_POLL_FORM_QUESTION_LIST, PollFormQuestionHome.getPollFormQuestionListByFormId( _pollform.getId( ), nIdFrom ) );
         model.put( MARK_FORM, form );
         model.put( MARK_FORM_STEP_QUESTION_LIST, stepWithQuestionList );
         model.put( MARK_POLLFORM, _pollform );
-        model.put( SecurityTokenService.MARK_TOKEN, SecurityTokenService.getInstance( ).getToken( request, ACTION_MODIFY_POLLFORM ) );
 
-        return getPage( PROPERTY_PAGE_TITLE_MODIFY_POLLFORM, TEMPLATE_MODIFY_POLLFORM, model );
+        return getPage( PROPERTY_PAGE_TITLE_MODIFY_POLLFORM, TEMPLATE_MODIFY_POLLFORM );
     }
 
     /**
@@ -303,17 +308,11 @@ public class PollFormJspBean extends AbstractManageJspBean
      * @param request
      *            The Http request
      * @return The Jsp URL of the process result
-     * @throws AccessDeniedException
      */
     @Action( ACTION_MODIFY_POLLFORM )
-    public String doModifyPollForm( HttpServletRequest request ) throws AccessDeniedException
+    public String doModifyPollForm( HttpServletRequest request )
     {
         populate( _pollform, request, getLocale( ) );
-
-        if ( !SecurityTokenService.getInstance( ).validate( request, ACTION_MODIFY_POLLFORM ) )
-        {
-            throw new AccessDeniedException( "Invalid security token" );
-        }
 
         // Check constraints
         if ( !validateBean( _pollform, VALIDATION_ATTRIBUTES_PREFIX ) )
@@ -327,15 +326,18 @@ public class PollFormJspBean extends AbstractManageJspBean
             int nIdQuestion = question.getId( );
             String checkBoxValue = request.getParameter( String.valueOf( question.getId( ) ) );
             PollFormQuestion pollFormQuestion = PollFormQuestionHome.findByQuestionId( _pollform.getId( ), nIdQuestion );
-            if ( checkBoxValue != null )
+            if ( pollFormQuestion != null )
             {
-                pollFormQuestion.setIsChecked( true );
+                if ( checkBoxValue != null )
+                {
+                    pollFormQuestion.setIsChecked( true );
+                }
+                else
+                {
+                    pollFormQuestion.setIsChecked( false );
+                }
+                PollFormQuestionHome.update( pollFormQuestion );
             }
-            else
-            {
-                pollFormQuestion.setIsChecked( false );
-            }
-            PollFormQuestionHome.update( pollFormQuestion );
         }
 
         PollFormHome.update( _pollform );
@@ -352,18 +354,27 @@ public class PollFormJspBean extends AbstractManageJspBean
      * @return The HTML form to update info
      */
     @View( VIEW_MODIFY_POLLFORM_QUESTION )
-    public String getModifyPollFormQuestion( HttpServletRequest request )
+    public String getModifyPollFormQuestion( HttpServletRequest request, Models model )
     {
         int nIdPollFormQuestion = Integer.parseInt( request.getParameter( PARAMETER_ID_POLLFORM_QUESTION ) );
         PollFormQuestion pollFormQuestion = PollFormQuestionHome.findByPrimaryKey( nIdPollFormQuestion );
+
+        if ( pollFormQuestion == null )
+        {
+            return redirectView( request, VIEW_MANAGE_POLLFORMS );
+        }
+
         Question question = QuestionHome.findByPrimaryKey( pollFormQuestion.getIdQuestion( ) );
 
-        Map<String, Object> model = getModel( );
+        if ( question == null )
+        {
+            return redirectView( request, VIEW_MANAGE_POLLFORMS );
+        }
+
         model.put( MARK_POLL_FORM_QUESTION, pollFormQuestion );
         model.put( MARK_QUESTION, question );
-        model.put( SecurityTokenService.MARK_TOKEN, SecurityTokenService.getInstance( ).getToken( request, ACTION_MODIFY_POLLFORM_QUESTION ) );
 
-        return getPage( PROPERTY_PAGE_TITLE_MODIFY_POLLFORM_QUESTION, TEMPLATE_MODIFY_POLLFORM_QUESTION, model );
+        return getPage( PROPERTY_PAGE_TITLE_MODIFY_POLLFORM_QUESTION, TEMPLATE_MODIFY_POLLFORM_QUESTION );
     }
 
     /**
@@ -372,16 +383,10 @@ public class PollFormJspBean extends AbstractManageJspBean
      * @param request
      *            The Http request
      * @return The Jsp URL of the process result
-     * @throws AccessDeniedException
      */
     @Action( ACTION_MODIFY_POLLFORM_QUESTION )
-    public String doModifyPollFormQuestion( HttpServletRequest request ) throws AccessDeniedException
+    public String doModifyPollFormQuestion( HttpServletRequest request )
     {
-        if ( !SecurityTokenService.getInstance( ).validate( request, ACTION_MODIFY_POLLFORM_QUESTION ) )
-        {
-            throw new AccessDeniedException( "Invalid security token" );
-        }
-
         String idPollFormQuestion = request.getParameter( "id" );
         String type = request.getParameter( "type" );
         String isToolBox = request.getParameter( "is_visible_toolbox" );
@@ -408,19 +413,22 @@ public class PollFormJspBean extends AbstractManageJspBean
      * @param request
      *            The Http request
      * @return The Jsp URL of the process result
-     * @throws AccessDeniedException
      */
     @View( VIEW_CHARTS )
-    public String getCharts( HttpServletRequest request ) throws AccessDeniedException
+    public String getCharts( HttpServletRequest request, Models model )
     {
-        Map<String, Object> model = getModel( );
-
         String strIdPoll = request.getParameter( PARAMETER_ID_POLL );
         PollForm pollForm = PollFormHome.findByPrimaryKey( Integer.valueOf( strIdPoll ) );
+
+        if ( pollForm == null )
+        {
+            return redirectView( request, VIEW_MANAGE_POLLFORMS );
+        }
+
         model.put( "poll_form", pollForm );
         model.put( "poll_visualization_list", PollFormService.getPollVisualizationList( Integer.valueOf( strIdPoll ) ) );
 
-        return getPage( PROPERTY_PAGE_TITLE_VIEW_CHARTS, TEMPLATE_VIEW_CHARTS, model );
+        return getPage( PROPERTY_PAGE_TITLE_VIEW_CHARTS, TEMPLATE_VIEW_CHARTS );
     }
 
 }

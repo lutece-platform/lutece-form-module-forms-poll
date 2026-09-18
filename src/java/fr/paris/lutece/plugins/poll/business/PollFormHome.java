@@ -35,8 +35,9 @@ package fr.paris.lutece.plugins.poll.business;
 
 import fr.paris.lutece.portal.service.plugin.Plugin;
 import fr.paris.lutece.portal.service.plugin.PluginService;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
 import fr.paris.lutece.util.ReferenceList;
+
+import jakarta.enterprise.inject.spi.CDI;
 
 import java.util.List;
 
@@ -46,7 +47,7 @@ import java.util.List;
 public final class PollFormHome
 {
     // Static variable pointed at the DAO instance
-    private static IPollFormDAO _dao = SpringContextService.getBean( "poll.pollFormDAO" );
+    private static IPollFormDAO _dao = CDI.current( ).select( IPollFormDAO.class ).get( );
     private static Plugin _plugin = PluginService.getPlugin( "poll" );
 
     /**

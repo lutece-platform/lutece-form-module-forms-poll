@@ -34,6 +34,7 @@
 package fr.paris.lutece.plugins.poll.business;
 
 import fr.paris.lutece.test.LuteceTestCase;
+import org.junit.jupiter.api.Test;
 
 /**
  * This is the business class test for the object PollForm
@@ -48,6 +49,7 @@ public class PollFormBusinessTest extends LuteceTestCase
     /**
      * test PollForm
      */
+    @Test
     public void testBusiness( )
     {
         // Initialize an object
@@ -58,16 +60,16 @@ public class PollFormBusinessTest extends LuteceTestCase
         // Create test
         PollFormHome.create( pollForm );
         PollForm pollFormStored = PollFormHome.findByPrimaryKey( pollForm.getId( ) );
-        assertEquals( pollFormStored.getIdForm( ), pollForm.getIdForm( ) );
-        assertEquals( pollFormStored.getIsVisible( ), pollForm.getIsVisible( ) );
+        assertEquals( pollForm.getIdForm( ), pollFormStored.getIdForm( ) );
+        assertEquals( pollForm.getIsVisible( ), pollFormStored.getIsVisible( ) );
 
         // Update test
         pollForm.setIdForm( IDFORM2 );
         pollForm.setIsVisible( ISVISIBLE2 );
         PollFormHome.update( pollForm );
         pollFormStored = PollFormHome.findByPrimaryKey( pollForm.getId( ) );
-        assertEquals( pollFormStored.getIdForm( ), pollForm.getIdForm( ) );
-        assertEquals( pollFormStored.getIsVisible( ), pollForm.getIsVisible( ) );
+        assertEquals( pollForm.getIdForm( ), pollFormStored.getIdForm( ) );
+        assertEquals( pollForm.getIsVisible( ), pollFormStored.getIsVisible( ) );
 
         // List test
         PollFormHome.getPollFormsList( );

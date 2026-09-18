@@ -1,48 +1,24 @@
-<@box>
-    <@boxHeader title='#i18n{poll.modify_pollformquestion.pageTitle} : ${question.title!\' \'}' />
-    <@boxBody>
-        <@tform class="form-horizontal" method="post" name="modify_pollform"
-            action="jsp/admin/plugins/poll/ManagePollForms.jsp">
-            <@messages errors=errors />
-            <input type="hidden" id="id" name="id" value="${pollform_question.id}" />
-            <input type="hidden" value="${token}" name="token" />
-            <@input type='hidden' id='id_form' name='id_form' value='${pollform_question.idForm!\' \'}' tabIndex='0' />
-			<@formGroup labelFor='type' labelKey='#i18n{poll.modify_pollformquestion.labelChartType}'>
-                <select id="type" name="type" class="form-control">
-                    <option value="pie" 					<#if pollform_question.type = "pie"> selected=selected</#if>						>
-                        #i18n{poll.modify_pollformquestion.labelChartDonut}
-                    </option>
-                    <option value="bar" 					<#if pollform_question.type = "bar"> selected=selected</#if>
-						>
-                        #i18n{poll.modify_pollformquestion.labelChartBar}
-                    </option>
-                </select>
+<@pageContainer>
+    <@pageColumn>
+        <@pageHeader title="#i18n{poll.modify_pollformquestion.pageTitle} : ${question.title!}" />
+        <@messages infos=infos![] errors=errors![] warnings=warnings![] />
+        <@tform method='post' name='modify_pollform_question' action='jsp/admin/plugins/poll/ManagePollForms.jsp' boxed=true>
+            <@input type='hidden' name='action' value='modifyPollFormQuestion' />
+            <@input type='hidden' id='id' name='id' value='${pollform_question.id!}' />
+            <@input type='hidden' id='id_form' name='id_form' value='${pollform_question.idForm!}' tabIndex='0' />
+            <@formGroup labelFor='type' labelKey='#i18n{poll.modify_pollformquestion.labelChartType}'>
+                <@select name='type' id='type'>
+                    <@option value='pie' label='#i18n{poll.modify_pollformquestion.labelChartDonut}' selected=(pollform_question.type! == 'pie') />
+                    <@option value='bar' label='#i18n{poll.modify_pollformquestion.labelChartBar}' selected=(pollform_question.type! == 'bar') />
+                </@select>
             </@formGroup>
-            <@formGroup labelFor='type' labelKey='#i18n{poll.modify_pollformquestion.labelIsToolBox}'>
-                <@checkBox id="is_visible_toolbox" name="is_visible_toolbox" value="1"
-                    checked=pollform_question.isToolbox tabIndex='1' />
+            <@formGroup labelFor='is_visible_toolbox' labelKey='#i18n{poll.modify_pollformquestion.labelIsToolBox}'>
+                <@checkBox id='is_visible_toolbox' name='is_visible_toolbox' value='1' checked=pollform_question.isToolbox!false tabIndex='1' />
             </@formGroup>
-            <@actionButtons button1Name="action_modifyPollFormQuestion" button2Name="view_modifyPollForm" />
+            <@formGroup rows=2>
+                <@button type='submit' name='action_modifyPollFormQuestion' buttonIcon='check' title='#i18n{portal.util.labelValidate}' color='primary' />
+                <@aButton href='jsp/admin/plugins/poll/ManagePollForms.jsp?view=modifyPollForm&id=${pollform_question.idPollForm!}' buttonIcon='x' title='#i18n{portal.util.labelCancel}' />
+            </@formGroup>
         </@tform>
-    </@boxBody>
-</@box>
-<#function getCheckedValue questionId>
-    <#if poll_form_question_list?has_content>
-        <#list poll_form_question_list as optionalQuestion>
-            <#if optionalQuestion.idQuestion=questionId>
-                <#return true>
-            </#if>
-        </#list>
-    </#if>
-    <#return false>
-</#function>
-<#function getType questionId>
-    <#if poll_form_question_list?has_content>
-        <#list poll_form_question_list as optionalQuestion>
-            <#if optionalQuestion.idQuestion=questionId>
-                <#return "pie">
-            </#if>
-        </#list>
-    </#if>
-    <#return false>
-</#function>
+    </@pageColumn>
+</@pageContainer>

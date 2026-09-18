@@ -1,3 +1,6 @@
+-- liquibase formatted sql
+-- changeset poll:init_core_poll.sql
+-- preconditions onFail:MARK_RAN onError:WARN
 
 --
 -- Data for table core_admin_right

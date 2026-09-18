@@ -39,12 +39,15 @@ import fr.paris.lutece.util.ReferenceList;
 import fr.paris.lutece.util.sql.DAOUtil;
 import java.sql.Statement;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * This class provides Data Access methods for PollForm objects
  */
+@ApplicationScoped
 public final class PollFormDAO implements IPollFormDAO
 {
     // Constants
@@ -106,7 +109,6 @@ public final class PollFormDAO implements IPollFormDAO
 
             }
 
-            daoUtil.free( );
             return pollForm;
         }
     }
@@ -121,7 +123,6 @@ public final class PollFormDAO implements IPollFormDAO
         {
             daoUtil.setInt( 1, nKey );
             daoUtil.executeUpdate( );
-            daoUtil.free( );
         }
     }
 
@@ -146,7 +147,6 @@ public final class PollFormDAO implements IPollFormDAO
             daoUtil.setInt( nIndex, pollForm.getId( ) );
 
             daoUtil.executeUpdate( );
-            daoUtil.free( );
         }
     }
 
@@ -177,7 +177,6 @@ public final class PollFormDAO implements IPollFormDAO
                 pollFormList.add( pollForm );
             }
 
-            daoUtil.free( );
             return pollFormList;
         }
     }
@@ -198,7 +197,6 @@ public final class PollFormDAO implements IPollFormDAO
                 pollFormList.add( daoUtil.getInt( 1 ) );
             }
 
-            daoUtil.free( );
             return pollFormList;
         }
     }
@@ -219,7 +217,6 @@ public final class PollFormDAO implements IPollFormDAO
                 pollFormList.addItem( daoUtil.getInt( 1 ), daoUtil.getString( 2 ) );
             }
 
-            daoUtil.free( );
             return pollFormList;
         }
     }

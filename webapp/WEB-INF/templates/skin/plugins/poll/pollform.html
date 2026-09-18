@@ -1,25 +1,21 @@
-
-
-
-<#if poll_form.isVisible >
-<div class="jumbotron">
-  <h2 class="">${poll_form.title}</h2>
-
-  <#if poll_form.btnURL?has_content && poll_form.btnTitle?has_content >
-  <@aButton href='${poll_form.btnURL!""}' title='${poll_form.btnTitle!""}' buttonIcon='eye' />
-  </#if>
-      </div>
-<@row>
-  <#list poll_visualization_list as pollVisuzalisation, pollDataList>
-      <@columns md=6>
-          <div class="panel panel-default mb-4">
-              <div class="panel-body mb-2">
-                  <div id="${pollVisuzalisation.id}-chart" style="height:400px;width:100%"></div>
-              </div>
-          </div>
-      </@columns>
-  </#list>
-</@row>
+<@cTpl>
+<@cContainer>
+<#if (poll_form!)?has_content && poll_form.isVisible!false>
+    <@h level=1>${poll_form.title!}</@h>
+    <#if poll_form.btnURL?has_content && poll_form.btnTitle?has_content>
+        <@aButton href='${poll_form.btnURL!}' title='${poll_form.btnTitle!}' buttonIcon='eye' />
+    </#if>
+    <@cRow>
+        <#list (poll_visualization_list!{}) as pollVisuzalisation, pollDataList>
+            <@cCol md=6>
+                <div class="card mb-4">
+                    <div class="card-body mb-2">
+                        <div id="${pollVisuzalisation.id}-chart" style="height:400px;width:100%"></div>
+                    </div>
+                </div>
+            </@cCol>
+        </#list>
+    </@cRow>
 
 <script src="js/plugins/poll/echarts.min.js" ></script>
 
@@ -48,7 +44,7 @@
       }
 
   // generate chart for each poll visualization
-<#list poll_visualization_list as pollVisuzalisation, pollDataList> 
+<#list (poll_visualization_list!{}) as pollVisuzalisation, pollDataList> 
     colors = ["#ffbe0b","#fb5607","#ff006e","#8338ec","#3a86ff"];
     var chartDom = document.getElementById('${pollVisuzalisation.id}-chart');
     var myChart = echarts.init(chartDom);
@@ -68,7 +64,7 @@
               y: 'bottom'
           },
           toolbox: {
-              show: ${pollVisuzalisation.isToolBox?string('true','false')},
+              show: ${(pollVisuzalisation.isToolBox!false)?string('true','false')},
               feature: {
                   mark: {
                       show: true
@@ -86,7 +82,7 @@
               }
           },
         title: [{
-            text: '${pollVisuzalisation.title}',
+            text: '${pollVisuzalisation.title!}',
             subtext: "* Total : " + allValueSum + ' reponses',
                 left: 'center',
               top: 40,
@@ -98,7 +94,7 @@
                   lineOverflow: 'truncate'
               }
         }],
-        <#if pollVisuzalisation.type = "bar" >    
+        <#if (pollVisuzalisation.type!'') == "bar" >    
         grid: [{
         top: 110,
         width: '70%',
@@ -141,7 +137,7 @@
     }],
     </#if>
         series: [
-        <#if pollVisuzalisation.type = "bar" >    
+        <#if (pollVisuzalisation.type!'') == "bar" >    
         {
             type: 'bar',
             stack: 'chart',
@@ -168,7 +164,7 @@
             })
         }
         </#if>
-        <#if pollVisuzalisation.type = "pie" >    
+        <#if (pollVisuzalisation.type!'') == "pie" >    
         {
               top: 30,
               type: 'pie',
@@ -215,7 +211,7 @@
     </#list>
 </script>
 <#else>
-<div class="jumbotron">
-  <h2 class="">#i18n{info.poll.unavailable} </h2>
-</div>
+    <@h level=1>#i18n{info.poll.unavailable}</@h>
 </#if>
+</@cContainer>
+</@cTpl>

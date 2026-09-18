@@ -33,6 +33,9 @@
  */
 package fr.paris.lutece.plugins.poll.web;
 
+import fr.paris.lutece.portal.service.message.SiteMessage;
+import fr.paris.lutece.portal.service.message.SiteMessageException;
+import fr.paris.lutece.portal.service.message.SiteMessageService;
 import fr.paris.lutece.portal.web.xpages.XPage;
 import fr.paris.lutece.portal.util.mvc.xpage.MVCApplication;
 import fr.paris.lutece.plugins.poll.business.PollForm;
@@ -40,15 +43,20 @@ import fr.paris.lutece.plugins.poll.business.PollFormHome;
 import fr.paris.lutece.plugins.poll.service.PollFormService;
 import fr.paris.lutece.portal.util.mvc.commons.annotations.View;
 import fr.paris.lutece.portal.util.mvc.xpage.annotations.Controller;
+import fr.paris.lutece.portal.web.cdi.mvc.Models;
 
-import java.util.Map;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 
-import javax.servlet.http.HttpServletRequest;
+import org.apache.commons.lang3.math.NumberUtils;
 
 /**
  * This class provides a simple implementation of an XPage
  */
-@Controller( xpageName = "pollform", pageTitleI18nKey = "poll.xpage.pollform.pageTitle", pagePathI18nKey = "poll.xpage.pollform.pagePathLabel" )
+@RequestScoped
+@Named( "poll.xpage.pollform" )
+@Controller( xpageName = "pollform", pageTitleI18nKey = "poll.xpage.pollform.pageTitle", pagePathI18nKey = "poll.xpage.pollform.pagePathLabel", securityTokenEnabled = true )
 public class PollFormApp extends MVCApplication
 {
     /**
@@ -58,6 +66,7 @@ public class PollFormApp extends MVCApplication
     private static final String TEMPLATE_XPAGE = "/skin/plugins/poll/pollform.html";
     private static final String VIEW_HOME = "home";
     private static final String PARAMETER_ID_POLL = "id_poll";
+    private static final String MESSAGE_ERROR_POLL_NOT_FOUND = "poll.message.error.pollNotFound";
 
     /**
      * Returns the content of the page pollform.
@@ -67,16 +76,21 @@ public class PollFormApp extends MVCApplication
      * @return The view
      */
     @View( value = VIEW_HOME, defaultView = true )
-    public XPage viewHome( HttpServletRequest request )
+    public XPage viewHome( HttpServletRequest request, Models model ) throws SiteMessageException
     {
-        Map<String, Object> model = getModel( );
+        int nIdPoll = NumberUtils.toInt( request.getParameter( PARAMETER_ID_POLL ), -1 );
+        PollForm pollForm = ( nIdPoll != -1 ) ? PollFormHome.findByPrimaryKey( nIdPoll ) : null;
 
-        String strIdPoll = request.getParameter( PARAMETER_ID_POLL );
-        PollForm pollForm = PollFormHome.findByPrimaryKey( Integer.valueOf( strIdPoll ) );
+        if ( pollForm == null )
+        {
+            SiteMessageService.setMessage( request, MESSAGE_ERROR_POLL_NOT_FOUND, SiteMessage.TYPE_ERROR );
+            return null;
+        }
+
         model.put( "poll_form", pollForm );
-        model.put( "poll_visualization_list", PollFormService.getPollVisualizationList( Integer.valueOf( strIdPoll ) ) );
+        model.put( "poll_visualization_list", PollFormService.getPollVisualizationList( nIdPoll ) );
 
-        return getXPage( TEMPLATE_XPAGE, getLocale( request ), model );
+        return getXPage( TEMPLATE_XPAGE, getLocale( request ) );
     }
 
 }

@@ -39,12 +39,15 @@ import fr.paris.lutece.util.ReferenceList;
 import fr.paris.lutece.util.sql.DAOUtil;
 import java.sql.Statement;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * This class provides Data Access methods for PollFormQuestion objects
  */
+@ApplicationScoped
 public final class PollFormQuestionDAO implements IPollFormQuestionDAO
 {
     // Constants
@@ -109,7 +112,6 @@ public final class PollFormQuestionDAO implements IPollFormQuestionDAO
 
             }
 
-            daoUtil.free( );
             return pollFormQuestion;
         }
     }
@@ -124,7 +126,6 @@ public final class PollFormQuestionDAO implements IPollFormQuestionDAO
         {
             daoUtil.setInt( 1, nKey );
             daoUtil.executeUpdate( );
-            daoUtil.free( );
         }
     }
 
@@ -148,7 +149,6 @@ public final class PollFormQuestionDAO implements IPollFormQuestionDAO
             daoUtil.setInt( nIndex, pollFormQuestion.getId( ) );
 
             daoUtil.executeUpdate( );
-            daoUtil.free( );
         }
     }
 
@@ -179,7 +179,6 @@ public final class PollFormQuestionDAO implements IPollFormQuestionDAO
                 pollFormQuestionList.add( pollFormQuestion );
             }
 
-            daoUtil.free( );
             return pollFormQuestionList;
         }
     }
@@ -200,7 +199,6 @@ public final class PollFormQuestionDAO implements IPollFormQuestionDAO
                 pollFormQuestionList.add( daoUtil.getInt( 1 ) );
             }
 
-            daoUtil.free( );
             return pollFormQuestionList;
         }
     }
@@ -221,7 +219,6 @@ public final class PollFormQuestionDAO implements IPollFormQuestionDAO
                 pollFormQuestionList.addItem( daoUtil.getInt( 1 ), daoUtil.getString( 2 ) );
             }
 
-            daoUtil.free( );
             return pollFormQuestionList;
         }
     }

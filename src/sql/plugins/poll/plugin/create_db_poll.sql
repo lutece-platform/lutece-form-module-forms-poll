@@ -1,3 +1,6 @@
+-- liquibase formatted sql
+-- changeset poll:create_db_poll.sql
+-- preconditions onFail:MARK_RAN onError:WARN
 
 --
 -- Structure for table poll_form

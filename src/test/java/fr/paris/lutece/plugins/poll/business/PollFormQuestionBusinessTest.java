@@ -34,6 +34,7 @@
 package fr.paris.lutece.plugins.poll.business;
 
 import fr.paris.lutece.test.LuteceTestCase;
+import org.junit.jupiter.api.Test;
 
 /**
  * This is the business class test for the object PollFormQuestion
@@ -48,6 +49,7 @@ public class PollFormQuestionBusinessTest extends LuteceTestCase
     /**
      * test PollFormQuestion
      */
+    @Test
     public void testBusiness( )
     {
         // Initialize an object
@@ -58,16 +60,16 @@ public class PollFormQuestionBusinessTest extends LuteceTestCase
         // Create test
         PollFormQuestionHome.create( pollFormQuestion );
         PollFormQuestion pollFormQuestionStored = PollFormQuestionHome.findByPrimaryKey( pollFormQuestion.getId( ) );
-        assertEquals( pollFormQuestionStored.getIdForm( ), pollFormQuestion.getIdForm( ) );
-        assertEquals( pollFormQuestionStored.getIdQuestion( ), pollFormQuestion.getIdQuestion( ) );
+        assertEquals( pollFormQuestion.getIdForm( ), pollFormQuestionStored.getIdForm( ) );
+        assertEquals( pollFormQuestion.getIdQuestion( ), pollFormQuestionStored.getIdQuestion( ) );
 
         // Update test
         pollFormQuestion.setIdForm( IDFORM2 );
         pollFormQuestion.setIdQuestion( IDQUESTION2 );
         PollFormQuestionHome.update( pollFormQuestion );
         pollFormQuestionStored = PollFormQuestionHome.findByPrimaryKey( pollFormQuestion.getId( ) );
-        assertEquals( pollFormQuestionStored.getIdForm( ), pollFormQuestion.getIdForm( ) );
-        assertEquals( pollFormQuestionStored.getIdQuestion( ), pollFormQuestion.getIdQuestion( ) );
+        assertEquals( pollFormQuestion.getIdForm( ), pollFormQuestionStored.getIdForm( ) );
+        assertEquals( pollFormQuestion.getIdQuestion( ), pollFormQuestionStored.getIdQuestion( ) );
 
         // List test
         PollFormQuestionHome.getPollFormQuestionsList( );
