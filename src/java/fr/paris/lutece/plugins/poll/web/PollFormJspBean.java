@@ -41,6 +41,7 @@ import fr.paris.lutece.portal.util.mvc.admin.annotations.Controller;
 import fr.paris.lutece.portal.util.mvc.commons.annotations.Action;
 import fr.paris.lutece.portal.util.mvc.commons.annotations.View;
 import fr.paris.lutece.portal.web.cdi.mvc.Models;
+import fr.paris.lutece.portal.web.constants.Messages;
 import fr.paris.lutece.portal.web.util.IPager;
 import fr.paris.lutece.portal.web.util.Pager;
 import fr.paris.lutece.util.url.UrlItem;
@@ -53,6 +54,9 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import fr.paris.lutece.plugins.forms.business.Form;
 import fr.paris.lutece.plugins.forms.business.FormHome;
@@ -98,7 +102,7 @@ public class PollFormJspBean extends MVCAdminJspBean
     private static final String PROPERTY_PAGE_TITLE_MANAGE_POLLFORMS = "poll.manage_pollforms.pageTitle";
     private static final String PROPERTY_PAGE_TITLE_MODIFY_POLLFORM = "poll.modify_pollform.pageTitle";
     private static final String PROPERTY_PAGE_TITLE_CREATE_POLLFORM = "poll.create_pollform.pageTitle";
-    private static final String PROPERTY_PAGE_TITLE_MODIFY_POLLFORM_QUESTION = "poll.modify_pollform_question.pageTitle";
+    private static final String PROPERTY_PAGE_TITLE_MODIFY_POLLFORM_QUESTION = "poll.modify_pollformquestion.pageTitle";
     private static final String PROPERTY_PAGE_TITLE_VIEW_CHARTS = "poll.view_charts.pageTitle";
 
     // Markers
@@ -135,9 +139,10 @@ public class PollFormJspBean extends MVCAdminJspBean
     // Infos
     private static final String INFO_POLLFORM_CREATED = "poll.info.pollform.created";
     private static final String INFO_POLLFORM_UPDATED = "poll.info.pollform.updated";
-    private static final String INFO_POLLFORM_QUESTION_UPDATED = "poll.info.pollform.question.updated";
+    private static final String INFO_POLLFORM_QUESTION_UPDATED = "poll.info.pollformquestion.updated";
     private static final String INFO_POLLFORM_REMOVED = "poll.info.pollform.removed";
-    private static final String INFO_POLLFORM_QUESTION_REMOVED = "poll.info.pollform.question.removed";
+
+    private static final int ID_NONE = -1;
 
     // Session variable to store working values
     private PollForm _pollform;
@@ -151,6 +156,8 @@ public class PollFormJspBean extends MVCAdminJspBean
      * 
      * @param request
      *            The HTTP request
+     * @param model
+     *            The model
      * @return The page
      */
     @View( value = VIEW_MANAGE_POLLFORMS, defaultView = true )
@@ -167,6 +174,8 @@ public class PollFormJspBean extends MVCAdminJspBean
      *
      * @param request
      *            The Http request
+     * @param model
+     *            The model
      * @return the html code of the pollform form
      */
     @View( VIEW_CREATE_POLLFORM )
@@ -191,10 +200,10 @@ public class PollFormJspBean extends MVCAdminJspBean
     @Action( ACTION_CREATE_POLLFORM )
     public String doCreatePollForm( HttpServletRequest request )
     {
+        _pollform = ( _pollform != null ) ? _pollform : new PollForm( );
         populate( _pollform, request, getLocale( ) );
 
-        // Check constraints
-        if ( !validateBean( _pollform, VALIDATION_ATTRIBUTES_PREFIX ) )
+        if ( !validateBean( _pollform, VALIDATION_ATTRIBUTES_PREFIX ) || !isComplete( _pollform ) )
         {
             return redirectView( request, VIEW_CREATE_POLLFORM );
         }
@@ -228,7 +237,13 @@ public class PollFormJspBean extends MVCAdminJspBean
     @View( value = VIEW_CONFIRM_REMOVE_POLLFORM, securityTokenAction = ACTION_REMOVE_POLLFORM )
     public String getConfirmRemovePollForm( HttpServletRequest request )
     {
-        int nId = Integer.parseInt( request.getParameter( PARAMETER_ID_POLLFORM ) );
+        int nId = NumberUtils.toInt( request.getParameter( PARAMETER_ID_POLLFORM ), ID_NONE );
+
+        if ( PollFormHome.findByPrimaryKey( nId ) == null )
+        {
+            return redirectView( request, VIEW_MANAGE_POLLFORMS );
+        }
+
         UrlItem url = new UrlItem( getActionUrl( ACTION_REMOVE_POLLFORM ) );
         url.addParameter( PARAMETER_ID_POLLFORM, nId );
 
@@ -247,7 +262,13 @@ public class PollFormJspBean extends MVCAdminJspBean
     @Action( ACTION_REMOVE_POLLFORM )
     public String doRemovePollForm( HttpServletRequest request )
     {
-        int nId = Integer.parseInt( request.getParameter( PARAMETER_ID_POLLFORM ) );
+        int nId = NumberUtils.toInt( request.getParameter( PARAMETER_ID_POLLFORM ), ID_NONE );
+
+        if ( PollFormHome.findByPrimaryKey( nId ) == null )
+        {
+            return redirectView( request, VIEW_MANAGE_POLLFORMS );
+        }
+
         PollFormHome.remove( nId );
         addInfo( INFO_POLLFORM_REMOVED, getLocale( ) );
 
@@ -259,12 +280,14 @@ public class PollFormJspBean extends MVCAdminJspBean
      *
      * @param request
      *            The Http request
+     * @param model
+     *            The model
      * @return The HTML form to update info
      */
     @View( VIEW_MODIFY_POLLFORM )
     public String getModifyPollForm( HttpServletRequest request, Models model )
     {
-        int nId = Integer.parseInt( request.getParameter( PARAMETER_ID_POLLFORM ) );
+        int nId = NumberUtils.toInt( request.getParameter( PARAMETER_ID_POLLFORM ), ID_NONE );
 
         if ( _pollform == null || ( _pollform.getId( ) != nId ) )
         {
@@ -312,10 +335,16 @@ public class PollFormJspBean extends MVCAdminJspBean
     @Action( ACTION_MODIFY_POLLFORM )
     public String doModifyPollForm( HttpServletRequest request )
     {
+        int nId = NumberUtils.toInt( request.getParameter( PARAMETER_ID_POLLFORM ), ID_NONE );
+
+        if ( ( _pollform == null ) || ( _pollform.getId( ) != nId ) )
+        {
+            return redirectView( request, VIEW_MANAGE_POLLFORMS );
+        }
+
         populate( _pollform, request, getLocale( ) );
 
-        // Check constraints
-        if ( !validateBean( _pollform, VALIDATION_ATTRIBUTES_PREFIX ) )
+        if ( !validateBean( _pollform, VALIDATION_ATTRIBUTES_PREFIX ) || !isComplete( _pollform ) )
         {
             return redirect( request, VIEW_MODIFY_POLLFORM, PARAMETER_ID_POLLFORM, _pollform.getId( ) );
         }
@@ -351,12 +380,14 @@ public class PollFormJspBean extends MVCAdminJspBean
      *
      * @param request
      *            The Http request
+     * @param model
+     *            The model
      * @return The HTML form to update info
      */
     @View( VIEW_MODIFY_POLLFORM_QUESTION )
     public String getModifyPollFormQuestion( HttpServletRequest request, Models model )
     {
-        int nIdPollFormQuestion = Integer.parseInt( request.getParameter( PARAMETER_ID_POLLFORM_QUESTION ) );
+        int nIdPollFormQuestion = NumberUtils.toInt( request.getParameter( PARAMETER_ID_POLLFORM_QUESTION ), ID_NONE );
         PollFormQuestion pollFormQuestion = PollFormQuestionHome.findByPrimaryKey( nIdPollFormQuestion );
 
         if ( pollFormQuestion == null )
@@ -387,11 +418,17 @@ public class PollFormJspBean extends MVCAdminJspBean
     @Action( ACTION_MODIFY_POLLFORM_QUESTION )
     public String doModifyPollFormQuestion( HttpServletRequest request )
     {
-        String idPollFormQuestion = request.getParameter( "id" );
+        int nIdPollFormQuestion = NumberUtils.toInt( request.getParameter( PARAMETER_ID_POLLFORM ), ID_NONE );
         String type = request.getParameter( "type" );
         String isToolBox = request.getParameter( "is_visible_toolbox" );
 
-        PollFormQuestion pollFormQuestion = PollFormQuestionHome.findByPrimaryKey( Integer.valueOf( idPollFormQuestion ) );
+        PollFormQuestion pollFormQuestion = PollFormQuestionHome.findByPrimaryKey( nIdPollFormQuestion );
+
+        if ( pollFormQuestion == null )
+        {
+            return redirectView( request, VIEW_MANAGE_POLLFORMS );
+        }
+
         pollFormQuestion.setType( type );
         if ( isToolBox != null )
         {
@@ -404,21 +441,23 @@ public class PollFormJspBean extends MVCAdminJspBean
         PollFormQuestionHome.update( pollFormQuestion );
         addInfo( INFO_POLLFORM_QUESTION_UPDATED, getLocale( ) );
 
-        return redirect( request, VIEW_MANAGE_POLLFORMS, "id", pollFormQuestion.getIdPollForm( ) );
+        return redirect( request, VIEW_MODIFY_POLLFORM, PARAMETER_ID_POLLFORM, pollFormQuestion.getIdPollForm( ) );
     }
 
     /**
-     * Process the change form of a pollform
+     * Returns the charts of a poll
      *
      * @param request
      *            The Http request
-     * @return The Jsp URL of the process result
+     * @param model
+     *            The model
+     * @return The page of the charts
      */
     @View( VIEW_CHARTS )
     public String getCharts( HttpServletRequest request, Models model )
     {
-        String strIdPoll = request.getParameter( PARAMETER_ID_POLL );
-        PollForm pollForm = PollFormHome.findByPrimaryKey( Integer.valueOf( strIdPoll ) );
+        int nIdPoll = NumberUtils.toInt( request.getParameter( PARAMETER_ID_POLL ), ID_NONE );
+        PollForm pollForm = PollFormHome.findByPrimaryKey( nIdPoll );
 
         if ( pollForm == null )
         {
@@ -426,9 +465,27 @@ public class PollFormJspBean extends MVCAdminJspBean
         }
 
         model.put( "poll_form", pollForm );
-        model.put( "poll_visualization_list", PollFormService.getPollVisualizationList( Integer.valueOf( strIdPoll ) ) );
+        model.put( "poll_visualization_list", PollFormService.getPollVisualizationList( nIdPoll ) );
 
         return getPage( PROPERTY_PAGE_TITLE_VIEW_CHARTS, TEMPLATE_VIEW_CHARTS );
     }
 
+    /**
+     * Checks the fields bean validation does not cover: a title and an existing target form, reported as errors
+     *
+     * @param pollForm
+     *            the poll form to check
+     * @return true when the poll form can be saved
+     */
+    private boolean isComplete( PollForm pollForm )
+    {
+        if ( StringUtils.isBlank( pollForm.getTitle( ) ) || ( FormHome.findByPrimaryKey( pollForm.getIdForm( ) ) == null ) )
+        {
+            addError( Messages.MANDATORY_FIELDS, getLocale( ) );
+
+            return false;
+        }
+
+        return true;
+    }
 }

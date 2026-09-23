@@ -5,30 +5,24 @@
         </@pageHeader>
         <@messages infos=infos![] errors=errors![] warnings=warnings![] />
         <#if pollform_list?has_content>
-            <@table>
-                <tr>
-                    <th>#i18n{poll.modify_pollform.labelTitle}</th>
-                    <th>#i18n{poll.manage_pollforms.columnIsVisible} Front-End</th>
-                    <th>#i18n{portal.util.labelActions}</th>
-                </tr>
-                <@tableHeadBodySeparator />
-                <#list pollform_list as pollform >
-                <tr>
-                    <td>
-                        ${pollform.title!}
-                    </td>
-                    <td>
-                        <#if pollform.isVisible>#i18n{poll.manage_pollforms.yes}<#else>#i18n{poll.manage_pollforms.no}</#if>
-                    </td>
-                    <td>
-                        <@aButton href='jsp/admin/plugins/poll/ManagePollForms.jsp?view=modifyPollForm&id=${pollform.id}' title='#i18n{portal.util.labelModify}' hideTitle=['all'] buttonIcon='pencil' />
-                        <@aButton href='jsp/admin/plugins/poll/ManagePollForms.jsp?view=viewCharts&id_poll=${pollform.id}' title='#i18n{portal.util.labelModify}' hideTitle=['all'] buttonIcon='eye' />
-                        <@aButton href='jsp/admin/plugins/poll/ManagePollForms.jsp?view=confirmRemovePollForm&id=${pollform.id}' title='#i18n{portal.util.labelDelete}' hideTitle=['all'] buttonIcon='trash' color='danger' />
-                        <@aButton href='jsp/site/Portal.jsp?page=pollform&id_poll=${pollform.id}' title='#i18n{portal.util.labelModify}' hideTitle=['all'] params='target="_blank"' buttonIcon='external-link' color='success' />
-                    </td>
-                </tr>
+            <@manageFeature>
+                <#list pollform_list as pollform>
+                <@manageFeatureItem>
+                    <@manageFeatureItemColumn>
+                        <strong>${pollform.title!}</strong>
+                    </@manageFeatureItemColumn>
+                    <@manageFeatureItemColumn>
+                        #i18n{poll.modify_pollform.labelIsVisible} : <#if pollform.isVisible>#i18n{poll.manage_pollforms.yes}<#else>#i18n{poll.manage_pollforms.no}</#if>
+                    </@manageFeatureItemColumn>
+                    <@manageFeatureItemColumn align='end'>
+                        <@aButton href='jsp/admin/plugins/poll/ManagePollForms.jsp?view=modifyPollForm&amp;id=${pollform.id}' title='#i18n{portal.util.labelModify}' hideTitle=['xs'] buttonIcon='edit' />
+                        <@aButton href='jsp/admin/plugins/poll/ManagePollForms.jsp?view=viewCharts&amp;id_poll=${pollform.id}' title='#i18n{poll.manage_pollforms.buttonViewCharts}' hideTitle=['xs'] buttonIcon='chart-bar' />
+                        <@aButton href='jsp/site/Portal.jsp?page=pollform&amp;id_poll=${pollform.id}' title='#i18n{poll.manage_pollforms.buttonViewSite}' hideTitle=['xs'] params='target="_blank"' buttonIcon='world' color='light' />
+                        <@aButton href='jsp/admin/plugins/poll/ManagePollForms.jsp?view=confirmRemovePollForm&amp;id=${pollform.id}' title='#i18n{portal.util.labelDelete}' hideTitle=['xs'] buttonIcon='trash' color='danger' />
+                    </@manageFeatureItemColumn>
+                </@manageFeatureItem>
                 </#list>
-            </@table>
+            </@manageFeature>
             <@paginationAdmin paginator=paginator combo=1 />
         <#else>
             <@empty title='#i18n{portal.util.labelNoItem}' />

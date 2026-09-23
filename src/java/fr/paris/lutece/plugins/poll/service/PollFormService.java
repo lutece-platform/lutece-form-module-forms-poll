@@ -53,9 +53,19 @@ import fr.paris.lutece.plugins.poll.business.PollFormQuestion;
 import fr.paris.lutece.plugins.poll.business.PollFormQuestionHome;
 import fr.paris.lutece.plugins.poll.business.PollVisualization;
 
+/**
+ * Builds the chart data of a poll from the responses submitted to its form
+ */
 public class PollFormService
 {
 
+    /**
+     * Counts, for each checked question of a poll, the submitted responses by choice; drafts are not counted
+     *
+     * @param nIdPoll
+     *            the poll id
+     * @return the charted questions with their counts
+     */
     public static Map<PollVisualization, List<PollData>> getPollVisualizationList( int nIdPoll )
     {
 
@@ -65,7 +75,7 @@ public class PollFormService
         List<PollFormQuestion> pollFormQuestionList = PollFormQuestionHome.getPollFormQuestionListByFormId( pollForm.getId( ), pollForm.getIdForm( ) );
         List<FormResponse> listFormResponses = FormResponseHome.selectAllFormResponsesUncompleteByIdForm( pollForm.getIdForm( ) );
         List<FormQuestionResponse> listFormQuestionResponse = FormQuestionResponseHome.getFormQuestionResponseListByFormResponseList(
-                listFormResponses.parallelStream( ).map( i -> i.getId( ) ).distinct( ).collect( Collectors.toList( ) ) );
+                listFormResponses.parallelStream( ).filter( formResponse -> !formResponse.isFromSave( ) ).map( i -> i.getId( ) ).distinct( ).collect( Collectors.toList( ) ) );
 
         List<PollFormQuestion> pollFormQuestionListChecked = pollFormQuestionList.stream( )
                 .filter( formQuestionResponse -> formQuestionResponse.getIsChecked( ) == true ).collect( Collectors.toList( ) );
@@ -81,8 +91,6 @@ public class PollFormService
 
             if ( question == null )
             {
-                // The forms question was deleted after the poll mapping was created: skip the dangling mapping
-                // instead of failing the whole visualization.
                 continue;
             }
 

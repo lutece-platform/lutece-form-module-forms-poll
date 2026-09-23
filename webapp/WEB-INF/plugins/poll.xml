@@ -22,11 +22,13 @@
     <admin-features>
         <admin-feature>
             <feature-id>POLL_MANAGEMENT</feature-id>
+            <feature-group>APPLICATIONS</feature-group>
             <feature-title>poll.adminFeature.Manage.name</feature-title>
             <feature-description>poll.adminFeature.Manage.description</feature-description>
             <feature-level>1</feature-level>
             <feature-url>jsp/admin/plugins/poll/ManagePollForms.jsp</feature-url>
-            <feature-icon-url/>
+            <feature-icon-url>ti ti-chart-pie</feature-icon-url>
+            <icon-url>ti ti-chart-pie</icon-url>
         </admin-feature>
     </admin-features>
 

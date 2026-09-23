@@ -1,6 +1,7 @@
 <@pageContainer>
     <@pageColumn>
         <@pageHeader title='${poll_form.title!}'>
+            <@aButton href='jsp/admin/plugins/poll/ManagePollForms.jsp?view=managePollForms' buttonIcon='arrow-left' title='#i18n{portal.util.labelBack}' color='light' />
             <#if poll_form.btnIsVisible!false>
                 <@aButton href='${poll_form.btnURL!}' title='${poll_form.btnTitle!}' buttonIcon='eye' />
             </#if>
@@ -11,7 +12,11 @@
                 <@columns md=6>
                     <div class="card mb-4">
                         <div class="card-body mb-2">
+                            <#if getTotal( pollDataList ) gt 0>
                             <div id="${pollVisuzalisation.id}-chart" style="height:400px;width:100%"></div>
+                            <#else>
+                            <@empty title='${pollVisuzalisation.title!}' subtitle='#i18n{poll.view_charts.labelNoAnswer}' iconName='chart-bar-off' />
+                            </#if>
                         </div>
                     </div>
                 </@columns>
@@ -48,13 +53,14 @@
 
   // generate chart for each poll visualization
 <#list (poll_visualization_list!{}) as pollVisuzalisation, pollDataList> 
+<#if getTotal( pollDataList ) gt 0>
     colors = ["#ffbe0b","#fb5607","#ff006e","#8338ec","#3a86ff"];
     var chartDom = document.getElementById('${pollVisuzalisation.id}-chart');
     var myChart = echarts.init(chartDom);
     builderJson = {
         "charts": {
             <#list pollDataList as data >
-        "${data.labelName}": ${data.size}, 
+        "${data.labelName?js_string}": ${data.size}, 
         </#list>
         }
     };
@@ -85,8 +91,8 @@
               }
           },
         title: [{
-            text: '${pollVisuzalisation.title!}',
-            subtext: "* Total : " + allValueSum + ' reponses',
+            text: '${(pollVisuzalisation.title!)?js_string}',
+            subtext: "* Total : " + allValueSum + ' #i18n{poll.view_charts.labelAnswers}',
                 left: 'center',
               top: 40,
               textStyle: {
@@ -107,16 +113,11 @@
         xAxis: [{
             type: 'value',
             max: allValueSum,
+            minInterval: 1,
             splitLine: {
                 show: true
             }
-        },{
-        type: 'value',
-        max: allValueSum,
-        splitLine: {
-            show: false
-        }
-    }],
+        }],
         yAxis: [{
             type: 'category',
             data: Object.keys(builderJson.charts),
@@ -127,17 +128,7 @@
             splitLine: {
                 show: false
             }
-        },{
-        type: 'category',
-        data: Object.keys(builderJson.charts),
-        axisLabel: {
-            interval: 0,
-            rotate: 30
-        },
-        splitLine: {
-            show: false
-        }
-    }],
+        }],
     </#if>
         series: [
         <#if (pollVisuzalisation.type!'') == "bar" >    
@@ -211,5 +202,14 @@
     ]
     };
         option && myChart.setOption(option);
+        new ResizeObserver( entries => entries.forEach( entry => echarts.getInstanceByDom( entry.target ).resize( ) ) ).observe( chartDom );
+</#if>
     </#list>
 </script>
+<#function getTotal pollDataList>
+    <#local total = 0 />
+    <#list pollDataList as data>
+        <#local total = total + data.size />
+    </#list>
+    <#return total>
+</#function>

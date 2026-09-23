@@ -1,18 +1,22 @@
 <@cTpl>
 <@cContainer>
 <#if (poll_form!)?has_content && poll_form.isVisible!false>
-    <@h level=1>${poll_form.title!}</@h>
+    <@cTitle level=2>${poll_form.title!}</@cTitle>
     <#if poll_form.btnURL?has_content && poll_form.btnTitle?has_content>
-        <@aButton href='${poll_form.btnURL!}' title='${poll_form.btnTitle!}' buttonIcon='eye' />
+        <@cBtn href='${poll_form.btnURL!}' label='${poll_form.btnTitle!}' />
     </#if>
     <@cRow>
         <#list (poll_visualization_list!{}) as pollVisuzalisation, pollDataList>
-            <@cCol md=6>
-                <div class="card mb-4">
-                    <div class="card-body mb-2">
-                        <div id="${pollVisuzalisation.id}-chart" style="height:400px;width:100%"></div>
-                    </div>
-                </div>
+            <@cCol cols='md-6'>
+                <@cBlock class='card mb-4'>
+                    <@cBlock class='card-body mb-2'>
+                        <#if getTotal( pollDataList ) gt 0>
+                        <@cBlock id='${pollVisuzalisation.id}-chart' params='style="height:400px;width:100%"'></@cBlock>
+                        <#else>
+                        <@cEmpty title='${pollVisuzalisation.title!}' subtitle='#i18n{poll.view_charts.labelNoAnswer}' iconName='chart-bar-off' />
+                        </#if>
+                    </@cBlock>
+                </@cBlock>
             </@cCol>
         </#list>
     </@cRow>
@@ -45,13 +49,14 @@
 
   // generate chart for each poll visualization
 <#list (poll_visualization_list!{}) as pollVisuzalisation, pollDataList> 
+<#if getTotal( pollDataList ) gt 0>
     colors = ["#ffbe0b","#fb5607","#ff006e","#8338ec","#3a86ff"];
     var chartDom = document.getElementById('${pollVisuzalisation.id}-chart');
     var myChart = echarts.init(chartDom);
     builderJson = {
         "charts": {
             <#list pollDataList as data >
-        "${data.labelName}": ${data.size}, 
+        "${data.labelName?js_string}": ${data.size}, 
         </#list>
         }
     };
@@ -82,8 +87,8 @@
               }
           },
         title: [{
-            text: '${pollVisuzalisation.title!}',
-            subtext: "* Total : " + allValueSum + ' reponses',
+            text: '${(pollVisuzalisation.title!)?js_string}',
+            subtext: "* Total : " + allValueSum + ' #i18n{poll.view_charts.labelAnswers}',
                 left: 'center',
               top: 40,
               textStyle: {
@@ -104,16 +109,11 @@
         xAxis: [{
             type: 'value',
             max: allValueSum,
+            minInterval: 1,
             splitLine: {
                 show: true
             }
-        },{
-        type: 'value',
-        max: allValueSum,
-        splitLine: {
-            show: false
-        }
-    }],
+        }],
         yAxis: [{
             type: 'category',
             data: Object.keys(builderJson.charts),
@@ -124,17 +124,7 @@
             splitLine: {
                 show: false
             }
-        },{
-        type: 'category',
-        data: Object.keys(builderJson.charts),
-        axisLabel: {
-            interval: 0,
-            rotate: 30
-        },
-        splitLine: {
-            show: false
-        }
-    }],
+        }],
     </#if>
         series: [
         <#if (pollVisuzalisation.type!'') == "bar" >    
@@ -208,10 +198,18 @@
     ]
     };
         option && myChart.setOption(option);
+</#if>
     </#list>
 </script>
 <#else>
-    <@h level=1>#i18n{info.poll.unavailable}</@h>
+    <@cTitle level=2>#i18n{poll.info.poll.unavailable}</@cTitle>
 </#if>
 </@cContainer>
 </@cTpl>
+<#function getTotal pollDataList>
+    <#local total = 0 />
+    <#list pollDataList as data>
+        <#local total = total + data.size />
+    </#list>
+    <#return total>
+</#function>
