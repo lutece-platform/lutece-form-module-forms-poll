@@ -1,34 +1,36 @@
 <@pageContainer>
     <@pageColumn>
-        <@pageHeader title='#i18n{poll.create_pollform.pageTitle}' />
+        <@pageHeader title='#i18n{poll.create_pollform.pageTitle}'>
+            <@aButton href='jsp/admin/plugins/poll/ManagePollForms.jsp?view=managePollForms' buttonIcon='arrow-left' title='#i18n{portal.util.labelBack}' color='light' />
+        </@pageHeader>
         <@messages infos=infos![] errors=errors![] warnings=warnings![] />
-        <@tform name='create_pollform' action='jsp/admin/plugins/poll/ManagePollForms.jsp' boxed=true>
+        <@tform method='post' name='create_pollform' action='jsp/admin/plugins/poll/ManagePollForms.jsp' boxed=true>
             <@input type='hidden' name='action' value='createPollForm' />
-            <@formGroup labelFor='title' labelKey='#i18n{poll.modify_pollform.labelTitle}' mandatory=true>
+            <@formGroup labelFor='title' labelKey='#i18n{poll.modify_pollform.labelTitle}' mandatory=true rows=2>
                 <@input type='text' id='title' name='title' value='${pollform.title!}' mandatory=true />
             </@formGroup>
-            <@formGroup labelFor='id_form' labelKey='#i18n{poll.modify_pollform.labelIdForm}' mandatory=true>
-                <@select name='id_form' id='id_form'>
+            <@formGroup labelFor='poll_id_form' labelKey='#i18n{poll.modify_pollform.labelIdForm}' mandatory=true rows=2>
+                <@select name='id_form' id='poll_id_form'>
                     <#list form_list as form>
                         <@option value='${form.id}' label='${form.title!}' />
                     </#list>
                 </@select>
             </@formGroup>
-            <@formGroup labelFor='is_visible' labelKey='#i18n{poll.modify_pollform.labelIsVisible}'>
-                <@checkBox id='is_visible' name='is_visible' value='1' checked=pollform.isVisible!false tabIndex='1' />
+            <@formGroup labelFor='is_visible' labelKey='#i18n{poll.modify_pollform.labelIsVisible}' rows=2>
+                <@checkBox id='is_visible' name='is_visible' value='1' checked=pollform.isVisible!false orientation='switch' tabIndex='1' />
             </@formGroup>
-            <@formGroup labelFor='btn_is_visible' labelKey='#i18n{poll.modify_pollform.labelBtnIsVisible}'>
-                <@checkBox id='btn_is_visible' name='btn_is_visible' value='1' checked=pollform.btnIsVisible!false tabIndex='1' />
+            <@formGroup labelFor='btn_is_visible' labelKey='#i18n{poll.modify_pollform.labelBtnIsVisible}' rows=2>
+                <@checkBox id='btn_is_visible' name='btn_is_visible' value='1' checked=pollform.btnIsVisible!false orientation='switch' tabIndex='1' />
             </@formGroup>
-            <@formGroup labelFor='btn_title' labelKey='#i18n{poll.modify_pollform.labelBtnTitle}'>
+            <@formGroup labelFor='btn_title' labelKey='#i18n{poll.modify_pollform.labelBtnTitle}' rows=2>
                 <@input type='text' id='btn_title' name='btn_title' value='${pollform.btnTitle!}' />
             </@formGroup>
-            <@formGroup labelFor='btn_URL' labelKey='#i18n{poll.modify_pollform.labelBtnURL}'>
+            <@formGroup labelFor='btn_URL' labelKey='#i18n{poll.modify_pollform.labelBtnURL}' rows=2>
                 <@input type='text' id='btn_URL' name='btn_URL' value='${pollform.btnURL!}' />
             </@formGroup>
             <@formGroup rows=2>
                 <@button type='submit' name='action_createPollForm' buttonIcon='check' title='#i18n{portal.util.labelValidate}' color='primary' />
-                <@aButton href='jsp/admin/plugins/poll/ManagePollForms.jsp?view=managePollForms' buttonIcon='x' title='#i18n{portal.util.labelCancel}' />
+                <@aButton href='jsp/admin/plugins/poll/ManagePollForms.jsp?view=managePollForms' buttonIcon='x' title='#i18n{portal.util.labelCancel}' color='light' />
             </@formGroup>
         </@tform>
     </@pageColumn>

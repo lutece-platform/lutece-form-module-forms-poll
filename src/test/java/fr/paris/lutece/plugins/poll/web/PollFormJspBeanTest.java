@@ -1,5 +1,7 @@
  package fr.paris.lutece.plugins.poll.web;
 
+import fr.paris.lutece.plugins.forms.business.Form;
+import fr.paris.lutece.plugins.forms.business.FormHome;
 import fr.paris.lutece.plugins.poll.business.PollFormHome;
 import fr.paris.lutece.portal.business.user.AdminUser;
 import fr.paris.lutece.portal.service.admin.AccessDeniedException;
@@ -23,8 +25,8 @@ import org.junit.jupiter.api.Test;
  */
 public class PollFormJspBeanTest extends LuteceTestCase
 {
-    private static final int IDFORM1 = 1;
-    private static final int IDFORM2 = 2;
+    private static final String TITLE1 = "Poll title 1";
+    private static final String TITLE2 = "Poll title 2";
     private static final boolean ISVISIBLE1 = true;
     private static final boolean ISVISIBLE2 = false;
 
@@ -54,10 +56,14 @@ public class PollFormJspBeanTest extends LuteceTestCase
         html = _jspbean.getCreatePollForm( request, _models );
         assertNotNull( html );
 
+        int nIdForm1 = createForm( TITLE1 );
+        int nIdForm2 = createForm( TITLE2 );
+
         // action create PollForm
         request = new MockHttpServletRequest( );
 
-        request.addParameter( "id_form", String.valueOf( IDFORM1 ) );
+        request.addParameter( "title", TITLE1 );
+        request.addParameter( "id_form", String.valueOf( nIdForm1 ) );
         request.addParameter( "is_visible", String.valueOf( ISVISIBLE1 ) );
         request.addParameter( "action", "createPollForm" );
         request.setMethod( "POST" );
@@ -80,7 +86,7 @@ public class PollFormJspBeanTest extends LuteceTestCase
 
         // display modify PollForm JSP
         request = new MockHttpServletRequest( );
-        request.addParameter( "id_form", String.valueOf( IDFORM1 ) );
+        request.addParameter( "id_form", String.valueOf( nIdForm1 ) );
         request.addParameter( "is_visible", String.valueOf( ISVISIBLE1 ) );
         List<Integer> listIds = PollFormHome.getIdPollFormsList( );
         assertTrue( !listIds.isEmpty( ) );
@@ -92,11 +98,14 @@ public class PollFormJspBeanTest extends LuteceTestCase
         // action modify PollForm
         request = new MockHttpServletRequest( );
         response = new MockHttpServletResponse( );
-        request.addParameter( "id_form", String.valueOf( IDFORM2 ) );
+        request.addParameter( "id", String.valueOf( listIds.get( 0 ) ) );
+        request.addParameter( "title", TITLE2 );
+        request.addParameter( "id_form", String.valueOf( nIdForm2 ) );
         request.addParameter( "is_visible", String.valueOf( ISVISIBLE2 ) );
         request.setRequestURI( "jsp/admin/plugins/poll/ManagePollForms.jsp" );
         // important pour que MVCController sache quelle action effectuer
         request.addParameter( "action", "modifyPollForm" );
+        request.setMethod( "POST" );
         adminUser = new AdminUser( );
         adminUser.setAccessCode( "admin" );
 
@@ -148,5 +157,22 @@ public class PollFormJspBeanTest extends LuteceTestCase
             fail( "access denied" );
         }
 
+    }
+
+    /**
+     * Creates the forms form a poll is built on
+     *
+     * @param strTitle
+     *            the form title
+     * @return the form id
+     */
+    private int createForm( String strTitle )
+    {
+        Form form = new Form( );
+        form.setTitle( strTitle );
+        form.setBreadcrumbName( strTitle );
+        FormHome.create( form );
+
+        return form.getId( );
     }
 }
